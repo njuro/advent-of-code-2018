@@ -1,7 +1,7 @@
 import utils.readInputLines
 
 /** [https://adventofcode.com/2018/day/2] */
-class Day2 : AdventOfCodeTask {
+class Boxes : AdventOfCodeTask {
     override fun run(part2: Boolean): Any {
         val input = readInputLines("2.txt")
 
@@ -26,5 +26,5 @@ class Day2 : AdventOfCodeTask {
 }
 
 fun main() {
-    println(Day2().run(part2 = true))
+    println(Boxes().run(part2 = true))
 }

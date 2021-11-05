@@ -10,7 +10,12 @@ class AdventOfCodeTasksTest {
 
     @Test
     fun day2() {
-        runTaskTest(Day2(), 5704, "umdryabviapkozistwcnihjqx")
+        runTaskTest(Boxes(), 5704, "umdryabviapkozistwcnihjqx")
+    }
+
+    @Test
+    fun day3() {
+        runTaskTest(Areas(), 118539, 1270)
     }
 
     private fun runTaskTest(task: AdventOfCodeTask, part1Result: Any, part2Result: Any) {
