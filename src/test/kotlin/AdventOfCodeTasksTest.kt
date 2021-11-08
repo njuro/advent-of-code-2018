@@ -38,6 +38,11 @@ class AdventOfCodeTasksTest {
         runTaskTest(Instructions(), "BFLNGIRUSJXEHKQPVTYOCZDWMA", 880)
     }
 
+    @Test
+    fun day8() {
+        runTaskTest(Nodes(), 42501, 30857)
+    }
+
     private fun runTaskTest(task: AdventOfCodeTask, part1Result: Any, part2Result: Any) {
         assertEquals(part1Result, task.run())
         assertEquals(part2Result, task.run(part2 = true))
