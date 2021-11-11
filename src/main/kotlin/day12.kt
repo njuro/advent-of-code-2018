@@ -1,35 +1,52 @@
 import utils.readInputLines
 
 /** [https://adventofcode.com/2018/day/12] */
-class Day12 : AdventOfCodeTask {
+class Plants : AdventOfCodeTask {
     override fun run(part2: Boolean): Any {
+
         val input = readInputLines("12.txt")
-        val plants = input.first().split(": ")[1].withIndex()
-            .associate { it.index to it.value }.toMutableMap().withDefault { '.' }
+
         val notes = input.drop(2).associate {
             val (state, result) = it.split(" => ")
             state to result.first()
         }
 
-        fun grow(current: MutableMap<Int, Char>) = current.apply {
-            val minIndex = keys.minOrNull()!!
-            val maxIndex = keys.maxOrNull()!!
-            set(minIndex - 1, '.')
-            set(maxIndex + 1, '.')
+        fun MutableMap<Int, Char>.grow() = apply {
+            set(keys.minOrNull()!! - 1, '.')
+            set(keys.maxOrNull()!! + 1, '.')
         }.mapValues { (index) ->
-            val nearby = (index - 2..index + 2).map { current.getValue(it) }.joinToString("")
-            notes.getOrDefault(nearby, '.')
+            notes[(index - 2..index + 2).map { getValue(it) }.joinToString("")]!!
         }.toMutableMap().withDefault { '.' }
 
-        var current = plants
-        repeat(20) {
-            current = grow(current)
-        }
+        fun MutableMap<Int, Char>.checksum() = filterValues { it == '#' }.keys.sum()
 
-        return current.filterValues { it == '#' }.keys.sum()
+        var plants = input.first().split(": ")[1].withIndex()
+            .associate { it.index to it.value }.toMutableMap().withDefault { '.' }
+
+        return if (part2) {
+            var generation = 0
+            var previousSize = 0
+            var previousDiff = 0
+            while (true) {
+                generation++
+                plants = plants.grow()
+                val diff = plants.checksum() - previousSize
+                if (diff == previousDiff) {
+                    break
+                }
+                previousDiff = diff
+                previousSize = plants.checksum()
+            }
+            previousSize + previousDiff * (50_000_000_000L - generation + 1)
+        } else {
+            repeat(20) {
+                plants = plants.grow()
+            }
+            plants.checksum()
+        }
     }
 }
 
 fun main() {
-    println(Day12().run(part2 = false))
+    println(Plants().run(part2 = true))
 }
