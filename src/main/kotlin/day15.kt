@@ -2,11 +2,11 @@ import utils.Coordinate
 import utils.readInputLines
 
 /** [https://adventofcode.com/2018/day/15] */
-class Day15 : AdventOfCodeTask {
+class Goblins : AdventOfCodeTask {
 
-    data class Unit(val type: Char, var location: Coordinate, var health: Int = 200) {
+    data class Unit(val type: Char, var location: Coordinate, var damage: Int = 3, var health: Int = 200) {
         fun attack(other: Unit) {
-            other.health -= 3
+            other.health -= damage
         }
 
         val dead: Boolean
@@ -18,25 +18,32 @@ class Day15 : AdventOfCodeTask {
             Comparator.comparingInt<Unit> { it.location.y }.thenComparingInt { it.location.x }
         val attackOrderComparator: Comparator<Unit> =
             Comparator.comparingInt<Unit> { it.health }.thenComparing(unitOrderComparator)
-    }
 
-    override fun run(part2: Boolean): Any {
-        val units = mutableSetOf<Unit>()
-        val map = readInputLines("15.txt").flatMapIndexed { y, row ->
+        val originalUnits = mutableSetOf<Unit>()
+        val originalMap = readInputLines("15.txt").flatMapIndexed { y, row ->
             row.trim().mapIndexedNotNull { x, element ->
                 val coordinate = Coordinate(x, y)
                 if (element in setOf('E', 'G')) {
-                    units.add(Unit(element, coordinate))
+                    originalUnits.add(Unit(element, coordinate))
                 }
                 coordinate to element
             }
-        }.toMap().toMutableMap().withDefault { '#' }
+        }.toMap()
+    }
+
+    private fun play(elvesMustWin: Boolean = false, elvesDamage: Int = 3): Int {
+        val units = originalUnits.map { it.copy(damage = if (it.type == 'E') elvesDamage else 3) }.toSet()
+        val map = originalMap.toMutableMap().withDefault { '#' }
+
         var gameOver = false
 
         fun processAttack(attacker: Unit, victim: Unit) {
             attacker.attack(victim)
             if (victim.dead) {
                 map[victim.location] = '.'
+                if (elvesMustWin && victim.type == 'E') {
+                    gameOver = true
+                }
                 if (units.filterNot(Unit::dead).groupBy(Unit::type).size == 1) {
                     gameOver = true
                 }
@@ -111,14 +118,25 @@ class Day15 : AdventOfCodeTask {
             }
         }
 
+        if (elvesMustWin && units.living().containsKey('G')) {
+            return -1
+        }
+
         return rounds * units.filterNot(Unit::dead).sumOf(Unit::health)
     }
 
-    private fun MutableSet<Unit>.living() = filterNot(Unit::dead).groupBy(Unit::type)
+    override fun run(part2: Boolean): Any {
+        return if (part2) {
+            generateSequence(4) { it + 1 }.map { play(elvesMustWin = true, elvesDamage = it) }
+                .first { it != -1 }
+        } else play()
+    }
+
+    private fun Set<Unit>.living() = filterNot(Unit::dead).groupBy(Unit::type)
     private fun Coordinate.adjacentInOrder() =
         listOf(Coordinate(x, y - 1), Coordinate(x - 1, y), Coordinate(x + 1, y), Coordinate(x, y + 1))
 }
 
 fun main() {
-    println(Day15().run(part2 = false))
+    println(Goblins().run(part2 = true))
 }
